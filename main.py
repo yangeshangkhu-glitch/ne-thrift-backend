@@ -2,7 +2,7 @@ import os
 import json
 import re
 import httpx
- from fastapi import FastAPI, Request, Query
+from fastapi import FastAPI, Request, Query
 from starlette.responses import PlainTextResponse
 
 from fastapi.middleware.cors import CORSMiddleware
