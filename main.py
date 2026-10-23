@@ -2,7 +2,9 @@ import os
 import json
 import re
 import httpx
-from fastapi import FastAPI, Request, Query, PlainTextResponse
+ from fastapi import FastAPI, Request, Query
+from starlette.responses import PlainTextResponse
+
 from fastapi.middleware.cors import CORSMiddleware
 from google import genai
 import razorpay
