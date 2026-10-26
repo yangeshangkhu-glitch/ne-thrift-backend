@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NE THRIFT — Curated Streetwear & Vintage</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'sans-serif'],
+            display: ['Syne', 'sans-serif'],
+          },
+          colors: {
+            neon: '#ccff00',
+            darkbg: '#0a0a0a',
+            cardbg: '#141414',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #f5f5f5;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans selection:bg-neon selection:text-black">
+
+  <!-- Top Announcement Bar -->
+  <div class="bg-neon text-black text-xs font-bold tracking-widest uppercase py-2 px-4 text-center">
+    ⚡ NE THRIFT ARCHIVE • CURATED DROPS FROM ACROSS THE NORTHEAST • VERIFIED SELLERS ⚡
+  </div>
+
+  <!-- Navbar -->
+  <header class="sticky top-0 z-40 bg-darkbg/90 backdrop-blur-md border-b border-neutral-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <span class="font-display text-2xl sm:text-3xl font-extrabold tracking-tighter text-white">
+          NE<span class="text-neon">THRIFT</span>
+        </span>
+        <span id="live-badge" class="hidden sm:inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-neutral-900 border border-neutral-700 text-neutral-300">
+          <span class="w-2 h-2 rounded-full bg-neon animate-pulse"></span>
+          Live Feed
+        </span>
+      </div>
+
+      <!-- Search & Actions -->
+      <div class="flex items-center gap-3">
+        <div class="relative hidden md:block w-64">
+          <i data-lucide="search" class="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+          <input
+            id="search-input"
+            type="text"
+            placeholder="Search grails, sizes, sellers..."
+            class="w-full bg-neutral-900 border border-neutral-800 rounded-full pl-9 pr-4 py-1.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neon"
+          />
+        </div>
+
+        <button onclick="fetchProducts()" title="Refresh Feed" class="p-2 rounded-full bg-neutral-900 border border-neutral-800 hover:border-neon text-neutral-300 hover:text-neon transition">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        </button>
+
+        <a
+          href="https://tally.so"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 bg-neon text-black font-bold text-xs sm:text-sm px-4 py-2 rounded-full hover:bg-lime-300 transition"
+        >
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>List a Piece</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative border-b border-neutral-800 bg-gradient-to-b from-neutral-900/40 to-darkbg py-10 sm:py-14 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
+      <div>
+        <p class="text-neon text-xs font-bold uppercase tracking-widest mb-2">Northeast India's Streetwear Marketplace</p>
+        <h1 class="font-display text-4xl sm:text-6xl font-extrabold tracking-tight leading-none text-white">
+          THRIFT THE <span class="text-neon">CULTURE.</span>
+        </h1>
+      </div>
+      <p class="text-neutral-400 text-sm sm:text-base max-w-md">
+        Every piece is measured down to the inch. Direct WhatsApp & Instagram checkout with verified community sellers.
+      </p>
+    </div>
+
+    <!-- Mobile Search -->
+    <div class="max-w-7xl mx-auto mt-6 md:hidden">
+      <div class="relative w-full">
+        <i data-lucide="search" class="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+        <input
+          id="mobile-search-input"
+          type="text"
+          placeholder="Search grails, sizes, sellers..."
+          class="w-full bg-neutral-900 border border-neutral-800 rounded-full pl-9 pr-4 py-2 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-neon"
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Category & Filter Bar -->
+  <section class="border-b border-neutral-800 bg-darkbg sticky top-16 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4 overflow-x-auto no-scrollbar">
+      <div id="category-filters" class="flex items-center gap-2">
+        <button data-category="ALL" class="cat-btn active bg-white text-black font-bold text-xs px-4 py-1.5 rounded-full transition whitespace-nowrap">
+          All Drops
+        </button>
+        <button data-category="Tops" class="cat-btn bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 font-medium text-xs px-4 py-1.5 rounded-full transition whitespace-nowrap">
+          Tops & Tees
+        </button>
+        <button data-category="Outerwear" class="cat-btn bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 font-medium text-xs px-4 py-1.5 rounded-full transition whitespace-nowrap">
+          Hoodies & Jackets
+        </button>
+        <button data-category="Bottoms" class="cat-btn bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 font-medium text-xs px-4 py-1.5 rounded-full transition whitespace-nowrap">
+          Bottoms & Denim
+        </button>
+        <button data-category="Footwear" class="cat-btn bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 font-medium text-xs px-4 py-1.5 rounded-full transition whitespace-nowrap">
+          Sneakers & Kicks
+        </button>
+      </div>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <span id="item-count" class="text-xs text-neutral-400 font-mono">Loading...</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Product Grid -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Status Banner -->
+    <div id="status-banner" class="hidden mb-6 p-4 rounded-xl bg-neutral-900 border border-neutral-800 text-sm text-neutral-300 flex items-center justify-between">
+      <span id="status-text"></span>
+      <button onclick="fetchProducts()" class="text-neon font-bold underline text-xs ml-4">Retry</button>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <div id="loading-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div class="animate-pulse bg-cardbg border border-neutral-800 rounded-2xl h-96"></div>
+      <div class="animate-pulse bg-cardbg border border-neutral-800 rounded-2xl h-96"></div>
+      <div class="animate-pulse bg-cardbg border border-neutral-800 rounded-2xl h-96"></div>
+      <div class="animate-pulse bg-cardbg border border-neutral-800 rounded-2xl h-96"></div>
+    </div>
+
+    <!-- Product Cards Container -->
+    <div id="product-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+  </main>
+
+  <!-- Product Detail & Measurement Modal -->
+  <div id="product-modal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-cardbg border border-neutral-800 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl animate-fadeIn">
+      <div class="grid grid-cols-1 md:grid-cols-2">
+        <!-- Modal Image -->
+        <div class="relative bg-neutral-900 aspect-square md:aspect-auto">
+          <img id="modal-image" src="" alt="Product" class="w-full h-full object-cover" />
+          <span id="modal-condition" class="absolute top-3 left-3 bg-black/80 backdrop-blur-md text-neon text-xs font-bold px-3 py-1 rounded-full border border-neutral-700"></span>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <p id="modal-category" class="text-xs uppercase tracking-widest text-neutral-400 font-bold"></p>
+                <h2 id="modal-title" class="text-xl font-bold text-white mt-1"></h2>
+              </div>
+              <button onclick="closeModal()" class="p-1.5 rounded-full bg-neutral-900 text-neutral-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+
+            <div class="mt-4 flex items-baseline gap-3">
+              <span id="modal-price" class="text-2xl font-extrabold text-neon"></span>
+              <span id="modal-shipping" class="text-xs text-neutral-400"></span>
+            </div>
+
+            <!-- Exact Garment Measurements Box -->
+            <div class="mt-5 bg-neutral-900/90 border border-neutral-800 rounded-xl p-3.5">
+              <div class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-300 mb-2.5">
+                <i data-lucide="ruler" class="w-3.5 h-3.5 text-neon"></i>
+                <span>Exact Measurements</span>
+              </div>
+              <div id="modal-measurements" class="grid grid-cols-2 gap-2 text-xs"></div>
+            </div>
+
+            <!-- Seller Info -->
+            <div class="mt-4 pt-4 border-t border-neutral-800 flex items-center justify-between text-xs text-neutral-400">
+              <span>Seller: <strong id="modal-seller" class="text-white"></strong></span>
+              <span id="modal-ig" class="text-neon font-medium"></span>
+            </div>
+          </div>
+
+          <!-- Checkout / Contact Actions -->
+          <div class="mt-6 flex flex-col gap-2.5">
+            <a id="modal-whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 rounded-xl bg-neon text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-lime-300 transition">
+              <i data-lucide="message-circle" class="w-4 h-4"></i>
+              <span>Buy via WhatsApp</span>
+            </a>
+            <a id="modal-ig-btn" href="#" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-neutral-900 border border-neutral-700 text-white font-semibold text-xs flex items-center justify-center gap-2 hover:border-neon transition">
+              <i data-lucide="instagram" class="w-4 h-4"></i>
+              <span>DM Seller on Instagram</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="border-t border-neutral-900 bg-darkbg py-8 px-4 text-center text-xs text-neutral-500">
+    <p>© 2026 NE THRIFT • Powered by Supabase + Tally + Make.com</p>
+  </footer>
+
+  <script>
+    // ==========================================
+    // 1. SUPABASE CONFIGURATION (NE THRIFT LIVE)
+    // ==========================================
+    const SUPABASE_URL = 'https://cstfnycdcpmlqigcacsr.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzdGZueWNkY3BtbHFpZ2NhY3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3NzYyMzgsImV4cCI6MjEwODM1MjIzOH0.TMgkhfC7MFLK5rzL0Z-TA6WciiNmuc0GFqKXYAoVc6A';
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Fallback sample items if your database has 0 rows or RLS needs a quick policy toggle
+    const FALLBACK_PRODUCTS = [
+      {
+        id: 'demo-1',
+        product_title: 'Vintage 90s Carhartt Detroit Work Jacket',
+        category: 'Outerwear',
+        size: 'L',
+        chest_inches: 46,
+        length_inches: 27,
+        waist_inches: null,
+        shoe_size: null,
+        price: 3499,
+        shipping_included: 'Free Shipping',
+        condition: '9/10 Vintage Fade',
+        image_url: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=900&q=80',
+        seller_name: 'Yang (NE Archive)',
+        instagram_handle: '@nethrift.in',
+        whatsapp_number: '919876543210'
+      },
+      {
+        id: 'demo-2',
+        product_title: 'Baggy Carpenter Skater Selvedge Denim',
+        category: 'Bottoms',
+        size: '32',
+        chest_inches: null,
+        length_inches: 41,
+        waist_inches: 32,
+        shoe_size: null,
+        price: 1899,
+        shipping_included: '+ ₹99 Shipping',
+        condition: '9.5/10 Like New',
+        image_url: 'https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=80',
+        seller_name: 'Kohima Vintage',
+        instagram_handle: '@kohimavintage',
+        whatsapp_number: '919876543210'
+      },
+      {
+        id: 'demo-3',
+        product_title: 'Heavyweight Boxy Graphic Band Tee',
+        category: 'Tops',
+        size: 'XL',
+        chest_inches: 48,
+        length_inches: 29,
+        waist_inches: null,
+        shoe_size: null,
+        price: 1199,
+        shipping_included: 'Free Shipping',
+        condition: '10/10 Deadstock',
+        image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80',
+        seller_name: 'Dimapur Drops',
+        instagram_handle: '@dimapurdrops',
+        whatsapp_number: '919876543210'
+      }
+    ];
+
+    let allProducts = [];
+    let currentCategory = 'ALL';
+    let searchQuery = '';
+
+    // ==========================================
+    // 2. FETCH PRODUCTS FROM SUPABASE
+    // ==========================================
+    async function fetchProducts() {
+      const loadingGrid = document.getElementById('loading-grid');
+      const productGrid = document.getElementById('product-grid');
+      const statusBanner = document.getElementById('status-banner');
+      const statusText = document.getElementById('status-text');
+
+      loadingGrid.classList.remove('hidden');
+      productGrid.classList.add('hidden');
+      statusBanner.classList.add('hidden');
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('products')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          allProducts = data;
+        } else {
+          // Show demo items if table is currently empty so user can test UI immediately
+          allProducts = FALLBACK_PRODUCTS;
+          statusBanner.classList.remove('hidden');
+          statusText.textContent = 'Connected to Supabase! Showing preview items until your first Tally submission lands in the products table.';
+        }
+      } catch (err) {
+        console.warn('Supabase fetch notice:', err.message);
+        allProducts = FALLBACK_PRODUCTS;
+        statusBanner.classList.remove('hidden');
+        statusText.textContent = `Showing preview catalog (${err.message || 'Check Supabase RLS policies to allow public SELECT on products'}).`;
+      } finally {
+        loadingGrid.classList.add('hidden');
+        productGrid.classList.remove('hidden');
+        renderProducts();
+      }
+    }
+
+    // ==========================================
+    // 3. RENDER PRODUCT GRID
+    // ==========================================
+    function renderProducts() {
+      const productGrid = document.getElementById('product-grid');
+      const itemCount = document.getElementById('item-count');
+
+      const filtered = allProducts.filter(item => {
+        const cat = (item.category || '').toLowerCase();
+        const matchesCat =
+          currentCategory === 'ALL' ||
+          cat.includes(currentCategory.toLowerCase());
+
+        const title = (item.product_title || '').toLowerCase();
+        const seller = (item.seller_name || '').toLowerCase();
+        const size = String(item.size || item.shoe_size || '').toLowerCase();
+        const matchesSearch =
+          !searchQuery ||
+          title.includes(searchQuery) ||
+          seller.includes(searchQuery) ||
+          size.includes(searchQuery);
+
+        return matchesCat && matchesSearch;
+      });
+
+      itemCount.textContent = `${filtered.length} ${filtered.length === 1 ? 'Piece' : 'Pieces'}`;
+
+      if (filtered.length === 0) {
+        productGrid.innerHTML = `
+          <div class="col-span-full text-center py-16 border border-dashed border-neutral-800 rounded-2xl">
+            <p class="text-neutral-400 text-base">No thrift pieces match your filter.</p>
+          </div>
+        `;
+        return;
+      }
+
+      productGrid.innerHTML = filtered.map((item, idx) => {
+        const imgUrl = extractImageUrl(item.image_url);
+        const priceFormatted = item.price ? `₹${Number(item.price).toLocaleString('en-IN')}` : '₹—';
+        const badgeSize = item.size || (item.shoe_size ? `UK ${item.shoe_size}` : 'OS');
+        const condition = item.condition || 'Verified Thrift';
+
+        return `
+          <div
+            onclick="openModal(${idx})"
+            class="group cursor-pointer bg-cardbg border border-neutral-800 hover:border-neon rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-200 hover:-translate-y-1"
+          >
+            <div>
+              <div class="relative aspect-[4/5] bg-neutral-900 overflow-hidden">
+                <img
+                  src="${imgUrl}"
+                  alt="${escapeHtml(item.product_title || 'Thrift Piece')}"
+                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  onerror="this.src='https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80'"
+                />
+                <div class="absolute top-3 left-3 flex gap-1.5">
+                  <span class="bg-black/85 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full border border-neutral-700">
+                    Size: ${escapeHtml(String(badgeSize))}
+                  </span>
+                </div>
+                <span class="absolute bottom-3 left-3 bg-black/80 backdrop-blur-md text-neon text-[11px] font-semibold px-2.5 py-0.5 rounded-full">
+                  ${escapeHtml(condition)}
+                </span>
+              </div>
+
+              <div class="p-4">
+                <p class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold">
+                  ${escapeHtml(item.category || 'Apparel')}
+                </p>
+                <h3 class="text-white font-bold text-base mt-0.5 line-clamp-1 group-hover:text-neon transition">
+                  ${escapeHtml(item.product_title || 'Untitled Grail')}
+                </h3>
+
+                <!-- Quick Measurement Pills -->
+                <div class="mt-2.5 flex flex-wrap gap-1.5 text-[11px] text-neutral-300">
+                  ${item.chest_inches ? `<span class="bg-neutral-900 border border-neutral-800 px-2 py-0.5 rounded">Chest: ${item.chest_inches}"</span>` : ''}
+                  ${item.length_inches ? `<span class="bg-neutral-900 border border-neutral-800 px-2 py-0.5 rounded">Length: ${item.length_inches}"</span>` : ''}
+                  ${item.waist_inches ? `<span class="bg-neutral-900 border border-neutral-800 px-2 py-0.5 rounded">Waist: ${item.waist_inches}"</span>` : ''}
+                  ${item.shoe_size ? `<span class="bg-neutral-900 border border-neutral-800 px-2 py-0.5 rounded">Shoe: ${item.shoe_size}</span>` : ''}
+                </div>
+              </div>
+            </div>
+
+            <div class="px-4 pb-4 pt-2 border-t border-neutral-800/80 flex items-center justify-between">
+              <div>
+                <span class="text-lg font-extrabold text-neon">${priceFormatted}</span>
+                <span class="block text-[10px] text-neutral-400">${escapeHtml(String(item.shipping_included ?? 'Standard Shipping'))}</span>
+              </div>
+              <span class="inline-flex items-center gap-1 text-xs font-bold text-white bg-neutral-900 group-hover:bg-neon group-hover:text-black px-3 py-1.5 rounded-full transition">
+                View <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+      window._currentFiltered = filtered;
+    }
+
+    // ==========================================
+    // 4. MODAL DETAILS & WHATSAPP / IG CHECKOUT
+    // ==========================================
+    function openModal(index) {
+      const item = (window._currentFiltered || allProducts)[index];
+      if (!item) return;
+
+      document.getElementById('modal-image').src = extractImageUrl(item.image_url);
+      document.getElementById('modal-condition').textContent = item.condition || 'Verified Thrift';
+      document.getElementById('modal-category').textContent = item.category || 'Streetwear';
+      document.getElementById('modal-title').textContent = item.product_title || 'Untitled Piece';
+      document.getElementById('modal-price').textContent = item.price ? `₹${Number(item.price).toLocaleString('en-IN')}` : '₹—';
+      document.getElementById('modal-shipping').textContent = item.shipping_included ? `(${item.shipping_included})` : '';
+      document.getElementById('modal-seller').textContent = item.seller_name || 'NE Thrift Seller';
+
+      const igHandle = (item.instagram_handle || '@nethrift').replace(/^@/, '');
+      document.getElementById('modal-ig').textContent = `@${igHandle}`;
+
+      // Measurements grid
+      const measurementsBox = document.getElementById('modal-measurements');
+      const specs = [
+        { label: 'Tag Size', val: item.size || '—' },
+        { label: 'Chest', val: item.chest_inches ? `${item.chest_inches} in` : '—' },
+        { label: 'Length', val: item.length_inches ? `${item.length_inches} in` : '—' },
+        { label: 'Waist', val: item.waist_inches ? `${item.waist_inches} in` : '—' },
+        { label: 'Shoe Size', val: item.shoe_size ? `${item.shoe_size}` : '—' }
+      ];
+      measurementsBox.innerHTML = specs.map(s => `
+        <div class="bg-cardbg px-2.5 py-1.5 rounded border border-neutral-800 flex justify-between">
+          <span class="text-neutral-400">${s.label}:</span>
+          <span class="font-bold text-white">${escapeHtml(String(s.val))}</span>
+        </div>
+      `).join('');
+
+      // WhatsApp deep link
+      const rawPhone = String(item.whatsapp_number || '').replace(/\D/g, '');
+      const cleanPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
+      const waMessage = encodeURIComponent(
+        `Hi! I want to buy "${item.product_title}" listed for ₹${item.price} on NE THRIFT.`
+      );
+      const waBtn = document.getElementById('modal-whatsapp-btn');
+      waBtn.href = cleanPhone
+        ? `https://wa.me/${cleanPhone}?text=${waMessage}`
+        : `https://wa.me/?text=${waMessage}`;
+
+      // Instagram link
+      const igBtn = document.getElementById('modal-ig-btn');
+      igBtn.href = `https://instagram.com/${igHandle}`;
+
+      document.getElementById('product-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      document.getElementById('product-modal').classList.add('hidden');
+    }
+
+    // Helper: Handle Tally array/JSON or plain URL in image_url
+    function extractImageUrl(raw) {
+      if (!raw) return 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+      if (typeof raw === 'string') {
+        const trimmed = raw.trim();
+        if (trimmed.startsWith('[')) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed) && parsed[0]?.url) return parsed[0].url;
+          } catch (e) {}
+        }
+        return trimmed;
+      }
+      if (Array.isArray(raw) && raw[0]?.url) return raw[0].url;
+      return 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&w=800&q=80';
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // ==========================================
+    // 5. EVENT LISTENERS
+    // ==========================================
+    document.querySelectorAll('.cat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.cat-btn').forEach(b => {
+          b.className = 'cat-btn bg-neutral-900 text-neutral-300 border border-neutral-800 hover:border-neutral-600 font-medium text-xs px-4 py-1.5 rounded-full transition whitespace-nowrap';
+        });
+        btn.className = 'cat-btn active bg-white text-black font-bold text-xs px-4 py-1.5 rounded-full transition whitespace-nowrap';
+        currentCategory = btn.getAttribute('data-category');
+        renderProducts();
+      });
+    });
+
+    document.getElementById('search-input').addEventListener('input', e => {
+      searchQuery = e.target.value.trim().toLowerCase();
+      renderProducts();
+    });
+
+    document.getElementById('mobile-search-input').addEventListener('input', e => {
+      searchQuery = e.target.value.trim().toLowerCase();
+      renderProducts();
+    });
+
+    document.getElementById('product-modal').addEventListener('click', e => {
+      if (e.target.id === 'product-modal') closeModal();
+    });
+
+    // Initialize icons and fetch live data
+    lucide.createIcons();
+    fetchProducts();
+  </script>
+</body>
+</html>
